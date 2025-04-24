@@ -2,6 +2,7 @@ import gspread
 import time
 import json
 import os
+import requests  # Add this import for the HTTP requests
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 from typing import List, Dict, Optional, Any
@@ -146,13 +147,11 @@ class WhatsAppSenderGUI:
         
         # WAHA Server URL
         ttk.Label(waha_frame, text="Server URL:").grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
-        self.waha_url = tk.StringVar(value="http://23.23.209.128")  # Updated to use the working server
+        self.waha_url = tk.StringVar(value="http://23.23.209.128")  # Default from EnhancedWAHAClient
         ttk.Entry(waha_frame, textvariable=self.waha_url, width=40).grid(row=0, column=1, sticky=tk.W, padx=5, pady=5)
         
-        # WAHA Session Name
-        ttk.Label(waha_frame, text="Session Name:").grid(row=1, column=0, sticky=tk.W, padx=5, pady=5)
-        self.waha_session = tk.StringVar(value="hiring-cste")  # Updated to use the correct session
-        ttk.Entry(waha_frame, textvariable=self.waha_session, width=40).grid(row=1, column=1, sticky=tk.W, padx=5, pady=5)
+        # Note about session name
+        ttk.Label(waha_frame, text="Note: Using session 'hiring-cste'").grid(row=1, column=0, columnspan=2, sticky=tk.W, padx=5, pady=5)
         
         # Test phone number for direct message test
         ttk.Label(waha_frame, text="Test Phone:").grid(row=2, column=0, sticky=tk.W, padx=5, pady=5)
@@ -176,15 +175,20 @@ class WhatsAppSenderGUI:
         try:
             self.log(f"Sending test message to {phone}...")
             
-            # Create a client with the current URL and session
-            from enhanced_sender import EnhancedWAHAClient
+            # Create a client with the current URL from GUI
             client = EnhancedWAHAClient(base_url=self.waha_url.get())
+            
+            # Get typing time
+            try:
+                typing_time = int(self.typing_time.get())
+            except ValueError:
+                typing_time = 2
             
             # Send a simple test message
             result = client.send_message_with_typing(
                 phone, 
                 "This is a test message from WhatsApp Sender. If you received this, the connection is working! 👍",
-                typing_time=2
+                typing_time=typing_time
             )
             
             if result and result.get("sent"):
@@ -203,8 +207,6 @@ class WhatsAppSenderGUI:
             self.log(f"Testing connection to WAHA server at {self.waha_url.get()}...")
             
             # First, try a simple GET request to check if server is reachable
-            import requests
-            
             # Add timeout to prevent hanging
             response = requests.get(f"{self.waha_url.get()}/api/sessions", timeout=10)
             
@@ -213,11 +215,11 @@ class WhatsAppSenderGUI:
                 self.log(f"Response: {response.text[:200]}...")  # Log first 200 chars
                 
                 # Now test if we can use the session
-                from enhanced_sender import EnhancedWAHAClient
-                
+                # Create client with URL from GUI
                 client = EnhancedWAHAClient(base_url=self.waha_url.get())
                 
                 # Try a simple operation like checking if the session exists
+                # Use the hardcoded session name from EnhancedWAHAClient
                 test_payload = {
                     "session": "hiring-cste"
                 }
@@ -257,7 +259,7 @@ class WhatsAppSenderGUI:
         except Exception as e:
             self.log(f"Error connecting to WAHA server: {e}")
             messagebox.showerror("Connection Error", f"Error connecting to WAHA server: {e}")
-    
+
     def send_messages(self):
         if not self.sender or not self.sender.worksheet:
             messagebox.showerror("Error", "Please connect to a sheet first")
@@ -297,9 +299,8 @@ class WhatsAppSenderGUI:
             
             def send_thread():
                 try:
-                    # Use the EnhancedWAHAClient with the correct server URL and session
-                    # Note: The client already has the correct values hardcoded
-                    self.sender.client = EnhancedWAHAClient()
+                    # Create a new client with the URL from GUI
+                    self.sender.client = EnhancedWAHAClient(base_url=self.waha_url.get())
                     
                     self.sender.send_messages(column_mapping, typing_time=typing_time, 
                                              callback=lambda msg: self.log(msg))
@@ -476,6 +477,8 @@ class WhatsAppSender:
             self.worksheet.update_cell(idx, status_col_idx, "Sending")
             
             # Send message with typing indicator
+            # Note: No need to format the phone number here as EnhancedWAHAClient._format_chat_id 
+            # will handle it automatically when send_message_with_typing is called
             result = self.client.send_message_with_typing(phone, message, typing_time)
             
             # Update status based on result

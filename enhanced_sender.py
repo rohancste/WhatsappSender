@@ -15,16 +15,7 @@ class EnhancedWAHAClient:
         """Make a request to WAHA API"""
         url = f"{self.base_url}/api/{endpoint}"
         try:
-            # Add more detailed logging
-            logger.info(f"Making request to {url} with payload: {payload}")
-            
-            # Add timeout to prevent hanging
-            response = requests.post(url, json=payload, timeout=10)
-            
-            # Log the response status and content
-            logger.info(f"Response status: {response.status_code}")
-            logger.info(f"Response content: {response.text[:200]}...")  # Log first 200 chars
-            
+            response = requests.post(url, json=payload)
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
