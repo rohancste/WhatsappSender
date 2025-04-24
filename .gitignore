@@ -1,0 +1,5 @@
+.sessions/
+whatsapp_sender.log
+__pycache__/
+*.pyc
+service_account.json
