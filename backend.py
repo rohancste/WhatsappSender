@@ -49,7 +49,7 @@ class WhatsAppSender:
                 column_mapping["status"] = header
         return column_mapping
 
-    def send_messages(self, column_mapping: Dict[str, str], status_column: str = "Status", typing_time: int = 2) -> list:
+    def send_messages(self, column_mapping: Dict[str, str], status_column: str = "Status", typing_time: int = 2, min_delay: int = 1, max_delay: int = 10) -> list:
         results = []
         if not self.data:
             results.append("No data loaded. Call load_data() first.")
@@ -92,8 +92,8 @@ class WhatsAppSender:
             self.worksheet.update_cell(idx, status_col_idx, status)
             results.append(f"Row {idx}: Message {status}")
 
-            # --- Randomized Delay Between Messages ---
-            message_gap = random.uniform(3.0, 7.0)
+            # --- Randomized Delay Between Messages (user input range) ---
+            message_gap = random.uniform(min_delay, max_delay)
             results.append(f"Waiting {message_gap:.2f} seconds before next message")
             time.sleep(message_gap)
         return results

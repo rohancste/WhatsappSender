@@ -85,6 +85,8 @@ with st.expander("3️⃣ Google Sheet Details", expanded=True):
 # --- Message Settings ---
 with st.expander("4️⃣ Message Settings", expanded=True):
     typing_time = st.number_input("Typing Time (seconds)", min_value=1, value=2)
+    min_delay = st.number_input("Min Delay Between Messages (seconds)", min_value=1, value=1)
+    max_delay = st.number_input("Max Delay Between Messages (seconds)", min_value=1, value=10)
 
 # --- Connect & Detect Columns ---
 if st.button("🔍 Connect & Detect Columns"):
@@ -113,7 +115,12 @@ if 'columns' in st.session_state:
         sender = st.session_state['sender']
         column_mapping = {"name": name_col, "phone": phone_col, "message": message_col}
         with st.spinner("Sending messages..."):
-            results = sender.send_messages(column_mapping, typing_time=typing_time)
+            results = sender.send_messages(
+                column_mapping,
+                typing_time=typing_time,
+                min_delay=min_delay,
+                max_delay=max_delay
+            )
             st.success("Message sending completed!")
         st.write("### Log")
         for r in results:
