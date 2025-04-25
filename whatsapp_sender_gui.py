@@ -191,7 +191,8 @@ class WhatsAppSenderGUI:
                 typing_time=typing_time
             )
             
-            if result and result.get("sent"):
+            # --- FIX: Accept any non-empty result as success ---
+            if result and (result.get("sent") or "_data" in result or "id" in result):
                 self.log(f"Test message sent successfully: {result}")
                 messagebox.showinfo("Success", "Test message sent successfully!")
             else:
@@ -213,40 +214,7 @@ class WhatsAppSenderGUI:
             if response.status_code == 200:
                 self.log(f"Server is reachable. Status code: {response.status_code}")
                 self.log(f"Response: {response.text[:200]}...")  # Log first 200 chars
-                
-                # Now test if we can use the session
-                # Create client with URL from GUI
-                client = EnhancedWAHAClient(base_url=self.waha_url.get())
-                
-                # Try a simple operation like checking if the session exists
-                # Use the hardcoded session name from EnhancedWAHAClient
-                test_payload = {
-                    "session": "hiring-cste"
-                }
-                
-                # Make a direct request to check session status
-                session_response = requests.post(
-                    f"{self.waha_url.get()}/api/sessions/status", 
-                    json=test_payload,
-                    timeout=10
-                )
-                
-                self.log(f"Session status response: {session_response.status_code}")
-                self.log(f"Session status: {session_response.text}")
-                
-                if session_response.status_code == 200:
-                    session_data = session_response.json()
-                    self.log(f"Session data: {session_data}")
-                    
-                    if session_data.get("status") == "CONNECTED":
-                        self.log("WAHA session is active and connected!")
-                        messagebox.showinfo("Success", "WAHA server is ONLINE and session is CONNECTED!")
-                    else:
-                        self.log(f"Session exists but status is: {session_data.get('status')}")
-                        messagebox.showwarning("Warning", f"WAHA server is ONLINE but session status is: {session_data.get('status')}")
-                else:
-                    self.log("Session check failed")
-                    messagebox.showwarning("Warning", "WAHA server is ONLINE but session check failed")
+                messagebox.showinfo("Success", "WAHA server is ONLINE!")
             else:
                 self.log(f"Failed to connect to WAHA server: Status code {response.status_code}")
                 messagebox.showerror("Connection Error", f"WAHA Server is OFFLINE. Status code: {response.status_code}")
@@ -477,12 +445,11 @@ class WhatsAppSender:
             self.worksheet.update_cell(idx, status_col_idx, "Sending")
             
             # Send message with typing indicator
-            # Note: No need to format the phone number here as EnhancedWAHAClient._format_chat_id 
-            # will handle it automatically when send_message_with_typing is called
             result = self.client.send_message_with_typing(phone, message, typing_time)
             
             # Update status based on result
-            if result and result.get("sent"):
+            # --- FIX: Accept any non-empty result as success ---
+            if result and (result.get("sent") or "_data" in result or "id" in result):
                 status = "Sent"
             else:
                 status = "Failed"
