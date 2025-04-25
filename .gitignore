@@ -1,4 +1,5 @@
-.sessions/
+env/
+.venv/
 whatsapp_sender.log
 __pycache__/
 *.pyc
