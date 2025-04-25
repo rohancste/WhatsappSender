@@ -32,6 +32,51 @@ with st.expander("2️⃣ WAHA Server Configuration", expanded=True):
     waha_url = st.text_input("WAHA Server URL", value="http://23.23.209.128")
     st.caption("Session: `hiring-cste` (default)")
 
+    # --- Test WAHA Connection ---
+    if st.button("Test WAHA Connection"):
+        import requests
+        try:
+            response = requests.get(f"{waha_url}/api/sessions", timeout=10)
+            if response.status_code == 200:
+                st.success("WAHA server is ONLINE!")
+                # st.write(response.text)  # <-- Remove or comment out this line
+            else:
+                st.error(f"WAHA server is OFFLINE. Status code: {response.status_code}")
+        except Exception as e:
+            st.error(f"Error connecting to WAHA server: {e}")
+
+    # --- Send Test Message ---
+    st.markdown("**Send Test WhatsApp Message**")
+    test_phone = st.text_input("Test Phone Number")
+    test_message = st.text_area("Test Message", value="This is a test message from WhatsApp Sender. If you received this, the connection is working! 👍")
+    test_typing_time = st.number_input("Typing Time (seconds)", min_value=1, value=2, key="test_typing_time")
+    if st.button("Send Test Message"):
+        from enhanced_sender import EnhancedWAHAClient
+        import re
+        if not test_phone:
+            st.warning("Please enter a test phone number.")
+        elif not test_message.strip():
+            st.warning("Please enter a message to send.")
+        else:
+            # Remove all non-digit characters
+            phone_clean = re.sub(r'\D', '', test_phone)
+            # Strict validation for Indian numbers (country code 91)
+            if not phone_clean.startswith("91"):
+                st.warning("Please include the country code (e.g., 91XXXXXXXXXX for India) at the beginning of the phone number.")
+            elif len(phone_clean) != 12:
+                st.warning("Phone number must be exactly 12 digits (country code + 10 digit number). Example: 91XXXXXXXXXX")
+            elif not phone_clean.isdigit():
+                st.warning("Phone number must contain only digits.")
+            else:
+                client = EnhancedWAHAClient(base_url=waha_url)
+                with st.spinner("Sending test message..."):
+                    result = client.send_message_with_typing(test_phone, test_message, test_typing_time)
+                if result and (result.get("sent") or "_data" in result or "id" in result):
+                    st.success("Test message sent successfully!")
+                    # st.write(result)  # <-- Remove or comment out this line
+                else:
+                    st.error(f"Failed to send test message: {result}")
+
 # --- Sheet Details Section ---
 with st.expander("3️⃣ Google Sheet Details", expanded=True):
     sheet_url = st.text_input("Google Sheet URL")

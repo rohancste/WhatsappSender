@@ -2,6 +2,7 @@ import gspread
 import time
 from typing import List, Dict, Optional
 from enhanced_sender import EnhancedWAHAClient
+import random
 
 class WhatsAppSender:
     def __init__(self, credentials_file: str = "service_account.json"):
@@ -48,7 +49,7 @@ class WhatsAppSender:
                 column_mapping["status"] = header
         return column_mapping
 
-    def send_messages(self, column_mapping: Dict[str, str], status_column: str = "Status", typing_time: int = 2) -> List[str]:
+    def send_messages(self, column_mapping: Dict[str, str], status_column: str = "Status", typing_time: int = 2) -> list:
         results = []
         if not self.data:
             results.append("No data loaded. Call load_data() first.")
@@ -76,6 +77,12 @@ class WhatsAppSender:
                 self.worksheet.update_cell(idx, status_col_idx, "Invalid Phone")
                 continue
             results.append(f"Sending message to {phone}")
+
+            # --- Randomized Typing Delay ---
+            typing_delay = random.uniform(1.5, 4.0)
+            results.append(f"Typing delay: {typing_delay:.2f} seconds")
+            time.sleep(typing_delay)
+
             self.worksheet.update_cell(idx, status_col_idx, "Sending")
             result = self.client.send_message_with_typing(phone, message, typing_time)
             if result and (result.get("sent") or "_data" in result or "id" in result):
@@ -84,5 +91,9 @@ class WhatsAppSender:
                 status = "Failed"
             self.worksheet.update_cell(idx, status_col_idx, status)
             results.append(f"Row {idx}: Message {status}")
-            time.sleep(1)
+
+            # --- Randomized Delay Between Messages ---
+            message_gap = random.uniform(3.0, 7.0)
+            results.append(f"Waiting {message_gap:.2f} seconds before next message")
+            time.sleep(message_gap)
         return results
