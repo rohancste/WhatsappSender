@@ -85,7 +85,7 @@ if __name__ == "__main__":
     client = EnhancedWAHAClient()
     
     # Test message
-    test_number = "8287475733"  # Replace with actual number
+    test_number = "120363418230720597@g.us"
     test_message = "Test message from Enhanced WAHA Client! 👋"
     
     print("Testing send_message_with_typing...")
