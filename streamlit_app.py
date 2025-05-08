@@ -29,7 +29,7 @@ with st.expander("1️⃣ Google Sheets Credentials", expanded=True):
 
 # --- WAHA Server Section ---
 with st.expander("2️⃣ WAHA Server Configuration", expanded=True):
-    waha_url = st.text_input("WAHA Server URL", value="http://23.23.209.128")
+    waha_url = st.text_input("WAHA Server URL", value="http://54.226.226.61:3000")
     st.caption("Session: `hiring-cste` (default)")
 
     # --- Test WAHA Connection ---

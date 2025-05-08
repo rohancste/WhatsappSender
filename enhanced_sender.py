@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class EnhancedWAHAClient:
-    def __init__(self, base_url: str = "http://23.23.209.128"):
+    def __init__(self, base_url: str = " http://54.226.226.61:3000"):
         self.base_url = base_url
         self.session = "hiring-cste"
 
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     client = EnhancedWAHAClient()
     
     # Test message
-    test_number = "120363418230720597@g.us"
+    test_number = "8287475733"  # Replace with actual number
     test_message = "Test message from Enhanced WAHA Client! 👋"
     
     print("Testing send_message_with_typing...")
